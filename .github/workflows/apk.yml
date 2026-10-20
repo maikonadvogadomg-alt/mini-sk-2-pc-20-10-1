@@ -1,0 +1,82 @@
+# Receita para o GitHub montar o APK — gerada pelo painel 📦 APK do Mini SK.
+# Nada aqui esconde erro: se um passo falhar, fica VERMELHO e o painel mostra onde.
+name: "📦 Gerar APK"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: "1. Baixar o projeto"
+        uses: actions/checkout@v4
+
+      - name: "2. Conferir configuração"
+        run: |
+          test -f apk.config.json || { echo "::error::Falta o apk.config.json. Use 'Preparar arquivos' no painel 📦 APK."; exit 1; }
+          test -f index.html || { echo "::error::Falta o index.html na raiz do projeto."; exit 1; }
+          test -f android/app/build.gradle || { echo "::error::Falta a pasta android/. Use 'Preparar arquivos' no painel 📦 APK."; exit 1; }
+          jq . apk.config.json
+
+      - name: "3. Instalar Java 17"
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: "4. Instalar Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: "5. Chave de assinatura (só na primeira vez)"
+        run: |
+          if [ -f android/release.keystore ]; then
+            echo "Chave já existe — o APK novo instala por cima do antigo."
+          else
+            keytool -genkeypair -v -keystore android/release.keystore -alias app -keyalg RSA -keysize 2048 -validity 10000 -storepass minisk-apk -keypass minisk-apk -dname "CN=Mini SK, O=App, C=BR"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add android/release.keystore
+            git commit -m "Chave de assinatura do APK (não apagar)"
+            git push
+          fi
+
+      - name: "6. Colocar o site dentro do APK"
+        run: |
+          mkdir -p android/app/src/main/assets/www
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'android' --exclude '.sk' --exclude 'apk.config.json' ./ android/app/src/main/assets/www/
+          echo "Arquivos dentro do APK: $(find android/app/src/main/assets/www -type f | wc -l)"
+
+      - name: "7. Montar o APK"
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: "8. Dar nome ao APK"
+        id: apk
+        run: |
+          NOME=$(jq -r '.arquivo' apk.config.json)
+          VER=$(jq -r '.versao' apk.config.json)
+          SAIDA="${NOME}-v${VER}.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "$SAIDA"
+          ls -la "$SAIDA"
+          echo "arquivo=$SAIDA" >> "$GITHUB_OUTPUT"
+
+      - name: "9. Guardar o APK"
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: ${{ steps.apk.outputs.arquivo }}
+          if-no-files-found: error
+
+      - name: "10. Link de download (Releases)"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: "APK ${{ steps.apk.outputs.arquivo }}"
+          files: ${{ steps.apk.outputs.arquivo }}

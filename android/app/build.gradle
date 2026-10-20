@@ -1,0 +1,46 @@
+plugins { id 'com.android.application' }
+
+// As escolhas feitas no painel 📦 APK do Mini SK ficam em apk.config.json
+def cfg = new groovy.json.JsonSlurper().parse(rootProject.file('../apk.config.json'))
+
+android {
+    namespace 'app.minisk.shell'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId cfg.pacote
+        minSdk 24
+        targetSdk 34
+        versionCode((cfg.versaoCodigo ?: 1) as Integer)
+        versionName "${cfg.versao ?: '1.0'}"
+        resValue "string", "app_name", "${cfg.nome}"
+        resValue "color", "tema", "${cfg.cor ?: '#0f1420'}"
+        resValue "bool", "lacre", "${cfg.lacre ? 'true' : 'false'}"
+        manifestPlaceholders = [orientacao: (cfg.orientacao ?: 'unspecified')]
+    }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file('release.keystore')
+            storePassword 'minisk-apk'
+            keyAlias 'app'
+            keyPassword 'minisk-apk'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}

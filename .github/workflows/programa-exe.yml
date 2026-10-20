@@ -1,0 +1,44 @@
+# Gera o Mini SK 2 para PC (.exe). Antes de entregar, o GitHub liga o programa
+# e confere se a tela e a ponte respondem. Se falhar, fica VERMELHO.
+name: "Programa .exe para Windows (Mini SK 2)"
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  exe:
+    runs-on: windows-latest
+    timeout-minutes: 45   # nunca fica "testando" para sempre
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v5
+      - name: Instalar o Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Instalar as peças
+        run: npm install --no-audit --no-fund
+      - name: Teste - o programa liga?
+        shell: pwsh
+        timeout-minutes: 4      # se travar, desiste em 4 minutos
+        continue-on-error: true # e faz o .exe mesmo assim (o aviso fica amarelo)
+        run: |
+          $env:TESTE_SAIR = "1"; $env:DADOS_EM = "$env:RUNNER_TEMP\casa-teste"
+          npx electron .
+          $codigo = $LASTEXITCODE
+          Get-Content "$env:RUNNER_TEMP\casa-teste\registro.txt" -ErrorAction SilentlyContinue
+          if ($codigo -ne 0) { throw "O programa não ligou (veja as linhas acima)" }
+      - name: Fazer o .exe
+        run: npx electron-builder --win nsis portable --x64 --publish never
+      - name: Entregar para baixar (Releases)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: exe-${{ github.run_number }}
+          name: "Mini SK 2 ${{ github.run_number }}"
+          files: release/*.exe
+      - name: Entregar também em Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mini-SK-2-Windows
+          path: release/*.exe
+          retention-days: 30

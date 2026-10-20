@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Mini SK 2</title>
+<link rel="stylesheet" href="css/app.css">
+  <!-- PWA:inicio (gerado pelo Mini SK — pode refazer no painel 📱 PWA) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1420">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mini SK 2">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      addEventListener('load', function () { navigator.serviceWorker.register('service-worker.js').catch(function (e) { console.warn('Service worker:', e); }); });
+    }
+  </script>
+  <!-- PWA:fim -->
+</head>
+<body>
+  <header id="top">
+    <button class="icon-btn" id="btn-tree" title="Arquivos (Ctrl+B)" aria-label="Mostrar ou esconder arquivos">☰</button>
+    <button class="proj-name" id="proj-name" title="Trocar de projeto">Mini SK 2</button>
+    <span class="versao-chip" id="versao-chip" title="Versão do Mini SK 2">SK 2 · 20/10</span>
+    <span class="save-ind" id="save-ind" aria-live="polite"></span>
+    <nav class="top-tools" aria-label="Painéis">
+      <button class="icon-btn" data-open="search" title="Buscar no projeto (Ctrl+Shift+F)" aria-label="Buscar">🔍<span class="lbl">Buscar</span></button>
+      <button class="icon-btn" data-open="ai" title="IA (Ctrl+J)" aria-label="IA">🤖<span class="lbl">IA</span></button>
+      <button class="icon-btn" data-open="term" title="Terminal: comandos que mexem na árvore, npm search" aria-label="Terminal">⌨️<span class="lbl">Terminal</span></button>
+      <button class="icon-btn" data-open="node" title="Node de verdade (WebContainer): npm install, node, npm run dev" aria-label="Node">⚡<span class="lbl">Node</span></button>
+      <button class="icon-btn" data-open="termux" title="Terminal do Termux (Linux do celular) — funciona no PWA e no APK" aria-label="Termux">📱<span class="lbl">Termux</span></button>
+      <button class="icon-btn" data-open="links" title="Meus Links: guardar endereços dos seus PWAs e sites; colar conversas" aria-label="Links">🔗<span class="lbl">Links</span></button>
+      <button class="icon-btn" data-open="play" title="Playground: testar HTML, React e Python ao lado" aria-label="Playground">▶️<span class="lbl">Play</span></button>
+      <button class="icon-btn" data-open="cp" title="Checkpoints (voltar)" aria-label="Checkpoints">📸<span class="lbl">Voltar</span></button>
+      <button class="icon-btn" data-open="gh" title="GitHub" aria-label="GitHub">🐙<span class="lbl">GitHub</span></button>
+      <button class="icon-btn" data-open="ft" title="Fatiador: dividir arquivo grande em blocos com índice" aria-label="Fatiador">✂️<span class="lbl">Fatiar</span></button>
+      <button class="icon-btn" data-open="api" title="Testar a API (servidor) do projeto" aria-label="Testar API">🧪<span class="lbl">API</span></button>
+      <button class="icon-btn" data-open="apk" title="Gerar APK (Android) pelo GitHub" aria-label="APK">📦<span class="lbl">APK</span></button>
+      <button class="icon-btn" data-open="prep" title="Preparar o projeto: analisa, tira a Replit, cria os arquivos que faltam" aria-label="Preparar">🏗️<span class="lbl">Preparar</span></button>
+      <button class="icon-btn" data-open="eas" title="APK de app Expo pela nuvem do Expo (EAS), com os dois tokens" aria-label="EAS">☁️<span class="lbl">EAS</span></button>
+      <button class="icon-btn" data-open="inv" title="Inventário: o que cada código faz, versões repetidas, o que aproveitar" aria-label="Inventário">📚<span class="lbl">Inventário</span></button>
+      <button class="icon-btn" data-open="rx" title="Raio-X: dependências, plano, pacote para a IA, montar de texto" aria-label="Raio-X">🧬<span class="lbl">Raio-X</span></button>
+      <button class="icon-btn" data-open="pwa" title="Ícones, instalar como app e Hub" aria-label="PWA">📱<span class="lbl">PWA</span></button>
+      <button class="icon-btn" data-open="cfg" title="Configuração: cofre de chaves" aria-label="Configuração">⚙️<span class="lbl">Config</span></button>
+      <button class="icon-btn" data-open="imp" title="Importar tudo: memória, backup, projeto .zip, conversas do ChatGPT/Claude — e picotar" aria-label="Importar">📥<span class="lbl">Importar</span></button>
+      <button class="icon-btn" data-open="proj" title="Projetos e configurações" aria-label="Projetos">🗂<span class="lbl">Projetos</span></button>
+    </nav>
+  </header>
+
+  <div id="main">
+    <aside id="tree-panel" aria-label="Arquivos"></aside>
+    <section id="center">
+      <div id="editor-area"></div>
+      <section id="preview-panel" aria-label="Preview"></section>
+    </section>
+    <aside id="side" aria-label="Painel">
+      <div class="panel-head"><b id="side-title"></b><button class="icon-btn" id="side-close" aria-label="Fechar painel" title="Fechar">✕</button></div>
+      <div id="side-body"></div>
+    </aside>
+    <div id="backdrop"></div>
+  </div>
+
+  <noscript><p style="padding:20px;color:#fff">O Mini SK precisa de JavaScript ligado.</p></noscript>
+
+  <!-- Ordem importa: cada módulo usa os anteriores. Sem bibliotecas externas. -->
+  <script src="js/00-core.js"></script>
+  <script src="js/04-conta.js"></script>
+  <script src="js/10-fs.js"></script>
+  <script src="js/20-zip.js"></script>
+  <script src="js/30-highlight.js"></script>
+  <script src="js/40-editor.js"></script>
+  <script src="js/50-tree.js"></script>
+  <script src="js/60-preview.js"></script>
+  <script src="js/61-tsx.js"></script>
+  <script src="js/70-search.js"></script>
+  <script src="js/80-ai.js"></script>
+  <script src="js/81-gasto.js"></script>
+  <script src="js/83-voz.js"></script>
+  <script src="js/84-ponte.js"></script>
+  <script src="js/85-checkpoints.js"></script>
+  <script src="js/86-terminal.js"></script>
+  <script src="js/86b-node.js"></script>
+  <script src="js/86c-termux.js"></script>
+  <script src="js/86f-pasta-viva.js"></script>
+  <script src="js/86g-largura.js"></script>
+  <script src="js/lib/jszip.min.js"></script>
+  <script src="js/lib/picotador/00-base.js"></script>
+  <script src="js/lib/picotador/10-ler.js"></script>
+  <script src="js/lib/picotador/20-projetos.js"></script>
+  <script src="js/lib/picotador/30-mensagens.js"></script>
+  <script src="js/92c-importar.js"></script>
+  <script src="js/86e-atalhos.js"></script>
+  <script src="js/87-links.js"></script>
+  <script src="js/88-inventario.js"></script>
+  <script src="js/89-config.js"></script>
+  <script src="js/90-github.js"></script>
+  <script src="js/91-acoes.js"></script>
+  <script src="js/92-playground.js"></script>
+  <script src="js/93-conversa.js"></script>
+  <script src="js/94-fatiador.js"></script>
+  <script src="js/95-pwa.js"></script>
+  <script src="js/96-apk.js"></script>
+  <script src="js/lib/nacl-fast.min.js"></script>
+  <script src="js/lib/selar.js"></script>
+  <script src="js/lib/expo-core.js"></script>
+  <script src="js/96b-eas.js"></script>
+  <script src="js/lib/plano-core.js"></script>
+  <script src="js/lib/receita-core.js"></script>
+  <script src="js/96c-preparar.js"></script>
+  <script src="js/97-analise.js"></script>
+  <script src="js/98-api.js"></script>
+  <script src="js/99-app.js"></script>
+</body>
+</html>
